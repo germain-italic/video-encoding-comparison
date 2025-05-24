@@ -35,11 +35,21 @@
     .swiper-button-next {
       color: #fff;
     }
-    .stars {
+    .rating-group {
       display: flex;
       justify-content: center;
+      gap: 2rem;
+      margin: 0.5rem 0;
+      flex-wrap: wrap;
+    }
+    .rating-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .stars {
+      display: flex;
       gap: 0.25rem;
-      margin: 0.5rem 0 1rem;
     }
     .star {
       font-size: 1.5rem;
@@ -52,12 +62,20 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 3rem;
+      margin-top: 2rem;
     }
     th, td {
       padding: 0.5rem;
       text-align: center;
       border: 1px solid #444;
+    }
+    #resetBtn {
+      margin-top: 2rem;
+      background: #333;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -66,6 +84,7 @@
   <div id="carousels-root"></div>
 
   <h2>Rating Summary</h2>
+  <button id="resetBtn">Reset all ratings</button>
   <table>
     <thead>
       <tr>
@@ -73,6 +92,7 @@
         <th>Sharpness</th>
         <th>Pixelation</th>
         <th>Color</th>
+        <th>Average</th>
       </tr>
     </thead>
     <tbody id="summary-table"></tbody>
@@ -101,9 +121,18 @@
     const root = document.getElementById('carousels-root');
     const summaryTable = document.getElementById('summary-table');
     const swipers = [];
+    const resetBtn = document.getElementById('resetBtn');
 
     const criteria = ['Sharpness', 'Pixelation', 'Color'];
-    const ratings = JSON.parse(localStorage.getItem('ratings') || '{}');
+    let ratings = JSON.parse(localStorage.getItem('ratings') || '{}');
+
+    resetBtn.onclick = () => {
+      if (confirm('Are you sure you want to reset all ratings?')) {
+        localStorage.removeItem('ratings');
+        ratings = {};
+        location.reload();
+      }
+    };
 
     function saveRatings() {
       localStorage.setItem('ratings', JSON.stringify(ratings));
@@ -112,25 +141,30 @@
 
     function updateSummary() {
       summaryTable.innerHTML = '';
-      encodings.forEach((encoding, eIdx) => {
+      encodings.forEach((encoding) => {
         const row = document.createElement('tr');
         const name = encoding.replace('frames/', '');
-        const cellName = `<td>${name}</td>`;
         const keyPrefix = encoding;
-        let cells = '';
+        let rowCells = `<td>${name}</td>`;
+        let allValues = [];
+
         criteria.forEach(c => {
           let total = 0, count = 0;
           for (let i = 1; i <= frameCount; i++) {
-            const v = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}/${c}`];
-            if (v !== undefined) {
-              total += v;
+            const val = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}/${c}`];
+            if (val !== undefined) {
+              total += val;
+              allValues.push(val);
               count++;
             }
           }
           const avg = count ? (total / count).toFixed(2) : '-';
-          cells += `<td>${avg}</td>`;
+          rowCells += `<td>${avg}</td>`;
         });
-        row.innerHTML = cellName + cells;
+
+        const overallAvg = allValues.length ? (allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(2) : '-';
+        rowCells += `<td>${overallAvg}</td>`;
+        row.innerHTML = rowCells;
         summaryTable.appendChild(row);
       });
     }
@@ -188,18 +222,25 @@
           img.alt = frameKey;
           slide.appendChild(img);
 
+          const group = document.createElement('div');
+          group.className = 'rating-group';
+
           criteria.forEach(c => {
-            const label = document.createElement('div');
+            const item = document.createElement('div');
+            item.className = 'rating-item';
+            const label = document.createElement('span');
             label.textContent = c;
-            slide.appendChild(label);
             const stars = createStars(frameKey, c);
             const saved = ratings[`${frameKey}/${c}`] || 0;
             [...stars.children].forEach((s, idx) => {
               if (idx < saved) s.classList.add('selected');
             });
-            slide.appendChild(stars);
+            item.appendChild(label);
+            item.appendChild(stars);
+            group.appendChild(item);
           });
 
+          slide.appendChild(group);
           slidesContainer.appendChild(slide);
         }
 
