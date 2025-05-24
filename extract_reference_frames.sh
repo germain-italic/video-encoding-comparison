@@ -28,10 +28,10 @@ for video in "$VIDEO_DIR"/*.mp4; do
   for idx in "${!TIMESTAMPS[@]}"; do
     ts="${TIMESTAMPS[$idx]}"
     frame_num=$(printf "%02d" $((idx + 1)))
-    ffmpeg -loglevel error -ss "$ts" -i "$video" -frames:v 1 "$target_dir/frame_${frame_num}.jpg"
+    ffmpeg -loglevel error -ss "$ts" -i "$video" -frames:v 1 "$target_dir/frame_${frame_num}.png"
   done
 
-  echo "✅ Extracted frames for: $base"
+  echo "✅ Extracted PNG frames for: $base"
 done
 
-echo "📁 All extracted images are available in: $OUTPUT_DIR/"
+echo "📁 All extracted PNG images are available in: $OUTPUT_DIR/"
