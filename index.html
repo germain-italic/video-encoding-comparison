@@ -1,59 +1,82 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Comparaison encodages - 10 images synchronisées</title>
+  <title>Video Encoding Comparison</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
   <style>
     body {
-      margin: 0;
       background: #111;
       color: #fff;
       font-family: sans-serif;
+      margin: 0;
       padding: 2rem;
     }
-
-    h1 {
-      margin-bottom: 2rem;
-    }
-
     .carousel-container {
-      margin-bottom: 3rem;
+      margin-bottom: 4rem;
     }
-
     .carousel-title {
       font-size: 1.2rem;
       margin-bottom: 1rem;
     }
-
     .swiper {
       width: 100%;
     }
-
     .swiper-slide {
-      display: flex;
-      justify-content: center;
+      text-align: center;
     }
-
     .swiper-slide img {
       width: 100%;
-      height: auto;
-      max-height: 100vh;
+      max-height: 80vh;
       object-fit: contain;
       background: #000;
     }
-
     .swiper-button-prev,
     .swiper-button-next {
       color: #fff;
     }
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      margin: 0.5rem 0 1rem;
+    }
+    .star {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+    .star.selected {
+      color: gold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid #444;
+    }
   </style>
 </head>
 <body>
-
-  <h1>Comparaison encodages vidéo (défilement synchronisé)</h1>
-
+  <h1>Video Encoding Comparison</h1>
   <div id="carousels-root"></div>
+
+  <h2>Rating Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Encoding</th>
+        <th>Sharpness</th>
+        <th>Pixelation</th>
+        <th>Color</th>
+      </tr>
+    </thead>
+    <tbody id="summary-table"></tbody>
+  </table>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
   <script>
@@ -76,41 +99,132 @@
 
     const frameCount = 10;
     const root = document.getElementById('carousels-root');
-
+    const summaryTable = document.getElementById('summary-table');
     const swipers = [];
 
-    encodings.forEach((encoding, index) => {
-      const safeId = `carousel-${index}`;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'carousel-container';
-      wrapper.innerHTML = `
-        <div class="carousel-title">${encoding}</div>
-        <div class="swiper ${safeId}">
-          <div class="swiper-wrapper">
-            ${Array.from({ length: frameCount }, (_, i) => `
-              <div class="swiper-slide">
-                <img src="${encoding}/frame_${String(i + 1).padStart(2, '0')}.jpg" alt="frame ${i + 1}" />
-              </div>`).join('')}
-          </div>
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
-        </div>
-      `;
-      root.appendChild(wrapper);
-    });
+    const criteria = ['Sharpness', 'Pixelation', 'Color'];
+    const ratings = JSON.parse(localStorage.getItem('ratings') || '{}');
+
+    function saveRatings() {
+      localStorage.setItem('ratings', JSON.stringify(ratings));
+      updateSummary();
+    }
+
+    function updateSummary() {
+      summaryTable.innerHTML = '';
+      encodings.forEach((encoding, eIdx) => {
+        const row = document.createElement('tr');
+        const name = encoding.replace('frames/', '');
+        const cellName = `<td>${name}</td>`;
+        const keyPrefix = encoding;
+        let cells = '';
+        criteria.forEach(c => {
+          let total = 0, count = 0;
+          for (let i = 1; i <= frameCount; i++) {
+            const v = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}/${c}`];
+            if (v !== undefined) {
+              total += v;
+              count++;
+            }
+          }
+          const avg = count ? (total / count).toFixed(2) : '-';
+          cells += `<td>${avg}</td>`;
+        });
+        row.innerHTML = cellName + cells;
+        summaryTable.appendChild(row);
+      });
+    }
+
+    function createStars(frameKey, criterion) {
+      const container = document.createElement('div');
+      container.className = 'stars';
+      for (let i = 1; i <= 5; i++) {
+        const span = document.createElement('span');
+        span.className = 'star';
+        span.innerHTML = '&#9733;';
+        span.dataset.value = i;
+        span.dataset.criterion = criterion;
+        span.dataset.frameKey = frameKey;
+        container.appendChild(span);
+      }
+      return container;
+    }
+
+    function attachStarEvents() {
+      document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', e => {
+          const i = parseInt(e.currentTarget.dataset.value);
+          const criterion = e.currentTarget.dataset.criterion;
+          const frameKey = e.currentTarget.dataset.frameKey;
+          console.log(`Clicked ${i} star for ${criterion} on ${frameKey}`);
+          ratings[`${frameKey}/${criterion}`] = i;
+          saveRatings();
+          const siblings = e.currentTarget.parentElement.querySelectorAll('.star');
+          siblings.forEach((s, idx) => {
+            s.classList.toggle('selected', idx < i);
+          });
+        });
+      });
+    }
+
+    function buildInterface() {
+      encodings.forEach((encoding, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'carousel-container';
+        const name = encoding.replace('frames/', '');
+        wrapper.innerHTML = `<div class="carousel-title">${name}</div>`;
+
+        const swiperWrapper = document.createElement('div');
+        swiperWrapper.className = `swiper swiper-${index}`;
+        const slidesContainer = document.createElement('div');
+        slidesContainer.className = 'swiper-wrapper';
+
+        for (let i = 1; i <= frameCount; i++) {
+          const frameKey = `${encoding}/frame_${String(i).padStart(2, '0')}`;
+          const slide = document.createElement('div');
+          slide.className = 'swiper-slide';
+          const img = document.createElement('img');
+          img.src = `${frameKey}.jpg`;
+          img.alt = frameKey;
+          slide.appendChild(img);
+
+          criteria.forEach(c => {
+            const label = document.createElement('div');
+            label.textContent = c;
+            slide.appendChild(label);
+            const stars = createStars(frameKey, c);
+            const saved = ratings[`${frameKey}/${c}`] || 0;
+            [...stars.children].forEach((s, idx) => {
+              if (idx < saved) s.classList.add('selected');
+            });
+            slide.appendChild(stars);
+          });
+
+          slidesContainer.appendChild(slide);
+        }
+
+        swiperWrapper.appendChild(slidesContainer);
+        swiperWrapper.innerHTML += `<div class="swiper-button-prev"></div><div class="swiper-button-next"></div>`;
+        wrapper.appendChild(swiperWrapper);
+        root.appendChild(wrapper);
+      });
+
+      attachStarEvents();
+    }
+
+    buildInterface();
 
     encodings.forEach((_, index) => {
-      const swiper = new Swiper(`.carousel-container:nth-child(${index + 1}) .swiper`, {
+      const swiper = new Swiper(`.swiper-${index}`, {
         slidesPerView: 1,
         navigation: {
-          nextEl: `.carousel-container:nth-child(${index + 1}) .swiper-button-next`,
-          prevEl: `.carousel-container:nth-child(${index + 1}) .swiper-button-prev`,
+          nextEl: `.swiper-${index} .swiper-button-next`,
+          prevEl: `.swiper-${index} .swiper-button-prev`,
         },
       });
       swipers.push(swiper);
     });
 
-    // Synchronisation
     swipers.forEach(swiper => {
       swiper.on('slideChange', () => {
         const activeIndex = swiper.activeIndex;
@@ -119,6 +233,8 @@
         });
       });
     });
+
+    updateSummary();
   </script>
 </body>
 </html>
