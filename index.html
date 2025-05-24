@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Comparaison encodages - 10 images synchronisées</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+    }
+
+    .carousel-container {
+      margin-bottom: 3rem;
+    }
+
+    .carousel-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .swiper {
+      width: 100%;
+    }
+
+    .swiper-slide {
+      display: flex;
+      justify-content: center;
+    }
+
+    .swiper-slide img {
+      width: 100%;
+      height: auto;
+      max-height: 100vh;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .swiper-button-prev,
+    .swiper-button-next {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Comparaison encodages vidéo (défilement synchronisé)</h1>
+
+  <div id="carousels-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script>
+    const encodings = [
+      "frames/Séquence 01 Facebook 1080",
+      "frames/Séquence 01 Facebook 720",
+      "frames/Séquence 01 H264 2020",
+      "frames/Séquence 01 H264 HLG",
+      "frames/Séquence 01 H264 PQ",
+      "frames/Séquence 01 HQ 1080",
+      "frames/Séquence 01 HQ 720",
+      "frames/Séquence 01 - Match source - Adaptative High Bitrate",
+      "frames/Séquence 01 Vimeo 1080",
+      "frames/Séquence 01 Vimeo 720",
+      "frames/Séquence 01 Youtube 1080",
+      "frames/Séquence 01 Youtube 720",
+      "frames/vokoscreenNG-2025-05-24_07-36-22",
+      "frames/vokoscreenNG-2025-05-24_07-36-22-00.00.05.731-00.47.36.857"
+    ];
+
+    const frameCount = 10;
+    const root = document.getElementById('carousels-root');
+
+    const swipers = [];
+
+    encodings.forEach((encoding, index) => {
+      const safeId = `carousel-${index}`;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'carousel-container';
+      wrapper.innerHTML = `
+        <div class="carousel-title">${encoding}</div>
+        <div class="swiper ${safeId}">
+          <div class="swiper-wrapper">
+            ${Array.from({ length: frameCount }, (_, i) => `
+              <div class="swiper-slide">
+                <img src="${encoding}/frame_${String(i + 1).padStart(2, '0')}.jpg" alt="frame ${i + 1}" />
+              </div>`).join('')}
+          </div>
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div>
+      `;
+      root.appendChild(wrapper);
+    });
+
+    encodings.forEach((_, index) => {
+      const swiper = new Swiper(`.carousel-container:nth-child(${index + 1}) .swiper`, {
+        slidesPerView: 1,
+        navigation: {
+          nextEl: `.carousel-container:nth-child(${index + 1}) .swiper-button-next`,
+          prevEl: `.carousel-container:nth-child(${index + 1}) .swiper-button-prev`,
+        },
+      });
+      swipers.push(swiper);
+    });
+
+    // Synchronisation
+    swipers.forEach(swiper => {
+      swiper.on('slideChange', () => {
+        const activeIndex = swiper.activeIndex;
+        swipers.forEach(other => {
+          if (other !== swiper) other.slideTo(activeIndex);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
