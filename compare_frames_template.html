@@ -136,7 +136,7 @@
         criteria.forEach(c => {
           let total = 0, count = 0;
           for (let i = 1; i <= frameCount; i++) {
-            const val = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}/${c}`];
+            const val = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}.png/${c}`];
             if (val !== undefined) {
               total += val;
               allValues.push(val);
