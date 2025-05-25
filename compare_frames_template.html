@@ -128,8 +128,8 @@
       summaryTable.innerHTML = '';
       encodings.forEach((encoding) => {
         const row = document.createElement('tr');
-        const name = encoding.replace('frames/', '');
-        const keyPrefix = encoding;
+        const name = encoding.name;
+        const keyPrefix = encoding.name;
         let rowCells = `<td>${name}</td>`;
         let allValues = [];
 
@@ -190,8 +190,8 @@
       encodings.forEach((encoding, index) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'carousel-container';
-        const name = encoding.replace('frames/', '');
-        wrapper.innerHTML = `<div class="carousel-title">${name}</div>`;
+        const name = encoding.name;
+        wrapper.innerHTML = `<div class="carousel-title">${encoding.name} (${encoding.size})<br><small>${encoding.summary}</small></div>`;
 
         const swiperWrapper = document.createElement('div');
         swiperWrapper.className = `swiper swiper-${index}`;
@@ -199,7 +199,7 @@
         slidesContainer.className = 'swiper-wrapper';
 
         for (let i = 1; i <= frameCount; i++) {
-          const frameKey = `${encoding}/frame_${String(i).padStart(2, '0')}.png`;
+          const frameKey = `${encoding.name}/frame_${String(i).padStart(2, '0')}.png`;
           const slide = document.createElement('div');
           slide.className = 'swiper-slide';
           const img = document.createElement('img');
