@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video Encoding Comparison</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    .carousel-container {
+      margin-bottom: 4rem;
+    }
+    .carousel-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .swiper {
+      width: 100%;
+    }
+    .swiper-slide {
+      text-align: center;
+    }
+    .swiper-slide img {
+      width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      background: #000;
+    }
+    .swiper-button-prev,
+    .swiper-button-next {
+      color: #fff;
+    }
+    .rating-group {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 0.5rem 0;
+      flex-wrap: wrap;
+    }
+    .rating-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .stars {
+      display: flex;
+      gap: 0.25rem;
+    }
+    .star {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+    .star.selected {
+      color: gold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid #444;
+    }
+    #resetBtn {
+      margin-top: 2rem;
+      background: #333;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Video Encoding Comparison</h1>
+  <div id="carousels-root"></div>
+
+  <h2>Rating Summary</h2>
+  <button id="resetBtn">Reset all ratings</button>
+  <table>
+    <thead>
+      <tr>
+        <th>Encoding</th>
+        <th>Sharpness</th>
+        <th>Pixelation</th>
+        <th>Color</th>
+        <th>Average</th>
+      </tr>
+    </thead>
+    <tbody id="summary-table"></tbody>
+  </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script>
+    const encodings = [{"name":"bbb_sunflower_1080p_30fps_normal_Adobe Stock HD with Audio (20Mbps)","size":"1.5G","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 19306 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Adobe Stock UHD with Audio (40Mbps)","size":"3.0G","summary":"H264 Main @ 3840x2160 / 30.00 fps / yuv420p / 39210 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Facebook 1080p Full HD","size":"962M","summary":"H264 High @ 1920x1080 / 30.00 fps / yuv420p / 12514 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Facebook 720p HD","size":"881M","summary":"H264 High @ 1280x720 / 30.00 fps / yuv420p / 11446 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_H264 - Correspondance à la source - 2020","size":"777M","summary":"H264 High 10 @ 1920x1080 / 30.00 fps / yuv420p10le / 9945 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_H264 - Correspondance à la source - HLG","size":"777M","summary":"H264 High 10 @ 1920x1080 / 30.00 fps / yuv420p10le / 9938 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_H264 - Correspondance à la source - PQ","size":"771M","summary":"H264 High 10 @ 1920x1080 / 30.00 fps / yuv420p10le / 9865 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_High Quality 1080p HD","size":"1.5G","summary":"H264 High @ 1920x1080 / 30.00 fps / yuv420p / 19315 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_High Quality 720p HD","size":"771M","summary":"H264 High @ 1280x720 / 30.00 fps / yuv420p / 9864 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_High Quality 720p HD_1","size":"771M","summary":"H264 High @ 1280x720 / 30.00 fps / yuv420p / 9864 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Match Source - Adaptive High Bitrate","size":"186M","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 2136 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Match Source - Adaptive Low Bitrate","size":"172M","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 2136 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Match Source - Adaptive Medium Bitrate","size":"177M","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 2136 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Mobile Device 1080p HD","size":"651M","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 8472 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Twitter 1080p Full HD-","size":"767M","summary":"H264 Main @ 1920x1080 / 30.00 fps / yuv420p / 9999 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Twitter 720p HD","size":"180M","summary":"H264 Main @ 1280x720 / 30.00 fps / yuv420p / 2241 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Vimeo 1080p Full HD","size":"1.3G","summary":"H264 High @ 1920x1080 / 30.00 fps / yuv420p / 16090 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_Vimeo 720p HD","size":"641M","summary":"H264 High @ 1280x720 / 30.00 fps / yuv420p / 8146 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_YouTube 1080p Full HD","size":"1.2G","summary":"H264 High @ 1920x1080 / 30.00 fps / yuv420p / 15388 kbps"},{"name":"bbb_sunflower_1080p_30fps_normal_YouTube 720p HD","size":"1.1G","summary":"H264 High @ 1280x720 / 30.00 fps / yuv420p / 13633 kbps"}];
+
+    const frameCount = 10;
+    const root = document.getElementById('carousels-root');
+    const summaryTable = document.getElementById('summary-table');
+    const swipers = [];
+    const resetBtn = document.getElementById('resetBtn');
+
+    const criteria = ['Sharpness', 'Pixelation', 'Color'];
+    let ratings = JSON.parse(localStorage.getItem('ratings') || '{}');
+
+    resetBtn.onclick = () => {
+      if (confirm('Are you sure you want to reset all ratings?')) {
+        localStorage.removeItem('ratings');
+        ratings = {};
+        location.reload();
+      }
+    };
+
+    function saveRatings() {
+      localStorage.setItem('ratings', JSON.stringify(ratings));
+      updateSummary();
+    }
+
+    function updateSummary() {
+      summaryTable.innerHTML = '';
+      encodings.forEach((encoding) => {
+        const row = document.createElement('tr');
+        const name = encoding.name;
+        const keyPrefix = encoding.name;
+        let rowCells = `<td>${name}</td>`;
+        let allValues = [];
+
+        criteria.forEach(c => {
+          let total = 0, count = 0;
+          for (let i = 1; i <= frameCount; i++) {
+            const val = ratings[`${keyPrefix}/frame_${String(i).padStart(2, '0')}.png/${c}`];
+            if (val !== undefined) {
+              total += val;
+              allValues.push(val);
+              count++;
+            }
+          }
+          const avg = count ? (total / count).toFixed(2) : '-';
+          rowCells += `<td>${avg}</td>`;
+        });
+
+        const overallAvg = allValues.length ? (allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(2) : '-';
+        rowCells += `<td>${overallAvg}</td>`;
+        row.innerHTML = rowCells;
+        summaryTable.appendChild(row);
+      });
+    }
+
+    function createStars(frameKey, criterion) {
+      const container = document.createElement('div');
+      container.className = 'stars';
+      for (let i = 1; i <= 5; i++) {
+        const span = document.createElement('span');
+        span.className = 'star';
+        span.innerHTML = '&#9733;';
+        span.dataset.value = i;
+        span.dataset.criterion = criterion;
+        span.dataset.frameKey = frameKey;
+        container.appendChild(span);
+      }
+      return container;
+    }
+
+    function attachStarEvents() {
+      document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', e => {
+          const i = parseInt(e.currentTarget.dataset.value);
+          const criterion = e.currentTarget.dataset.criterion;
+          const frameKey = e.currentTarget.dataset.frameKey;
+          console.log(`Clicked ${i} star for ${criterion} on ${frameKey}`);
+          ratings[`${frameKey}/${criterion}`] = i;
+          saveRatings();
+          const siblings = e.currentTarget.parentElement.querySelectorAll('.star');
+          siblings.forEach((s, idx) => {
+            s.classList.toggle('selected', idx < i);
+          });
+        });
+      });
+    }
+
+    function buildInterface() {
+      encodings.forEach((encoding, index) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'carousel-container';
+        const name = encoding.name;
+        wrapper.innerHTML = `<div class="carousel-title">${encoding.name} (${encoding.size})<br><small>${encoding.summary}</small></div>`;
+
+        const swiperWrapper = document.createElement('div');
+        swiperWrapper.className = `swiper swiper-${index}`;
+        const slidesContainer = document.createElement('div');
+        slidesContainer.className = 'swiper-wrapper';
+
+        for (let i = 1; i <= frameCount; i++) {
+          const frameKey = `${encoding.name}/frame_${String(i).padStart(2, '0')}.png`;
+          const slide = document.createElement('div');
+          slide.className = 'swiper-slide';
+          const img = document.createElement('img');
+          img.src = `${frameKey}`;
+          img.alt = frameKey;
+          slide.appendChild(img);
+
+          const group = document.createElement('div');
+          group.className = 'rating-group';
+
+          criteria.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'rating-item';
+            const label = document.createElement('span');
+            label.textContent = c;
+            const stars = createStars(frameKey, c);
+            const saved = ratings[`${frameKey}/${c}`] || 0;
+            [...stars.children].forEach((s, idx) => {
+              if (idx < saved) s.classList.add('selected');
+            });
+            item.appendChild(label);
+            item.appendChild(stars);
+            group.appendChild(item);
+          });
+
+          slide.appendChild(group);
+          slidesContainer.appendChild(slide);
+        }
+
+        swiperWrapper.appendChild(slidesContainer);
+        swiperWrapper.innerHTML += `<div class="swiper-button-prev"></div><div class="swiper-button-next"></div>`;
+        wrapper.appendChild(swiperWrapper);
+        root.appendChild(wrapper);
+      });
+
+      attachStarEvents();
+    }
+
+    buildInterface();
+
+    encodings.forEach((_, index) => {
+      const swiper = new Swiper(`.swiper-${index}`, {
+        slidesPerView: 1,
+        navigation: {
+          nextEl: `.swiper-${index} .swiper-button-next`,
+          prevEl: `.swiper-${index} .swiper-button-prev`,
+        },
+      });
+      swipers.push(swiper);
+    });
+
+    swipers.forEach(swiper => {
+      swiper.on('slideChange', () => {
+        const activeIndex = swiper.activeIndex;
+        swipers.forEach(other => {
+          if (other !== swiper) other.slideTo(activeIndex);
+        });
+      });
+    });
+
+    updateSummary();
+  </script>
+</body>
+</html>
