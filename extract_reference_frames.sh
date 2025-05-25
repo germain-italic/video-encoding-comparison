@@ -11,7 +11,7 @@ fi
 
 # Ask for output subdirectory name (inside VIDEO_DIR)
 read -e -i "frames" -p "Enter name for OUTPUT_DIR (inside VIDEO_DIR): " OUTPUT_SUBDIR
-OUTPUT_DIR="$VIDEO_DIR/$OUTPUT_SUBDIR"
+OUTPUT_DIR="${VIDEO_DIR%/}/$OUTPUT_SUBDIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Ask whether to extract
