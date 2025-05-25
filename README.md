@@ -279,5 +279,3 @@ MIT License
 > © 2025 Germain-Italic. Free for personal and commercial use with attribution.
 
 > Big Buck Bunny © 2008, [Blender Foundation](www.bigbuckbunny.org) under the Creative Commons Attribution 3.0 license.
-
-> This project is not affiliated with any brands mentionned on this page.
