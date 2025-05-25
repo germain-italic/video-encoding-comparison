@@ -52,7 +52,7 @@ chmod +x extract_reference_frames.sh
 
 ---
 
-## 📊 How to Interpret Results
+## 📊 How to interpret results
 
 - Click stars to rate each frame's **Sharpness**, **Pixelation**, and **Color**
 - Ratings are saved per image locally in your browser (`localStorage`)
@@ -63,7 +63,7 @@ chmod +x extract_reference_frames.sh
 
 ---
 
-## 📁 Output Structure
+## 📁 Output structure
 
 ```text
 bigbuckbunny/
@@ -156,7 +156,8 @@ _NB: the rating will work even if you don't rate all images._
 | H264 - Match Source - HLG | 777M | 00:09 | 3.29 | 4.14 | 1.50 | 3.05 | **21%** |
 | H264 - Match Source - PQ | 771M | 00:10 | 2.86 | 3.57 | 1.00 | 2.48 | **17%** |
 | Twitter 720p HD | 180M | 00:06 | 1.43 | 1.14 | 4.00 | 2.19 | **65%** |
-## Mathematical Formula
+
+## Mathematical formula
 
 **Quality/Size Ratio = (Quality_preset / Quality_original) × (Size_original / Size_preset) × 100**
 
@@ -172,7 +173,7 @@ This formula ensures that:
 - The original file has a ratio of exactly 100%
 - No preset can exceed 100% since quality cannot exceed the original (5/5)
 
-## Analysis Results
+## Analysis results
 
 **Best quality/size ratios:**
 - **Match Source - Adaptive Medium Bitrate**: 77% (quality 4.05, 177M)
@@ -226,7 +227,7 @@ Another test with crf 21 ends up with 283MB barely any noticeable difference on 
 | `-movflags +faststart`      | Optimizes file for web streaming by moving metadata to the beginning       | Enables playback before full download                                         |
 | `filename_crf21_optimized.mp4` | Output file                                           | Final optimized video                                                          |
 
-### Tunable Variables
+### Tunable variables
 
 | Variable     | Purpose                              | Typical Values         | Effect                                                                         |
 |--------------|--------------------------------------|-------------------------|--------------------------------------------------------------------------------|
