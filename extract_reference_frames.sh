@@ -15,14 +15,14 @@ OUTPUT_DIR="${VIDEO_DIR%/}/$OUTPUT_SUBDIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Ask whether to extract
-read -rp "Do you want to extract frames now? (y/n) " DO_EXTRACT
+read -rp "Do you want to extract frames? (y/n) " DO_EXTRACT
 DO_EXTRACT=${DO_EXTRACT,,}
 
 # Ask whether to generate HTML
-read -rp "Do you want to generate a HTML comparison file now? (y/n) " DO_HTML
+read -rp "Do you want to generate a HTML comparison file of the frames? (y/n) " DO_HTML
 DO_HTML=${DO_HTML,,}
 
-# Frame extraction
+# Prepare shared timestamps if random mode is selected
 if [[ "$DO_EXTRACT" == "y" ]]; then
   echo "How do you want to extract frames?"
   echo "1) Use predefined timestamps"
@@ -42,6 +42,19 @@ if [[ "$DO_EXTRACT" == "y" ]]; then
     "00:16:00.640"
   )
 
+  if [[ "$mode" == "2" ]]; then
+    first_video=$(find "$VIDEO_DIR" -maxdepth 1 -name "*.mp4" | head -n 1)
+    duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$first_video")
+    duration_int=${duration%.*}
+    min_margin=3
+    usable_duration=$((duration_int - 2 * min_margin))
+    declare -a SHARED_RANDOMS=()
+    while [ "${#SHARED_RANDOMS[@]}" -lt 10 ]; do
+      r=$((RANDOM % usable_duration + min_margin))
+      SHARED_RANDOMS+=("$r")
+    done
+  fi
+
   for video in "$VIDEO_DIR"/*.mp4; do
     base=$(basename "$video")
     name="${base%.*}"
@@ -57,17 +70,8 @@ if [[ "$DO_EXTRACT" == "y" ]]; then
         ffmpeg -loglevel error -ss "$ts" -i "$video" -frames:v 1 "$target_dir/frame_${frame_num}.png"
       done
     else
-      duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$video")
-      duration_int=${duration%.*}
-      min_margin=3
-      usable_duration=$((duration_int - 2 * min_margin))
-      declare -a randoms=()
-      while [ "${#randoms[@]}" -lt 10 ]; do
-        r=$((RANDOM % usable_duration + min_margin))
-        randoms+=("$r")
-      done
-      for idx in "${!randoms[@]}"; do
-        seconds="${randoms[$idx]}"
+      for idx in "${!SHARED_RANDOMS[@]}"; do
+        seconds="${SHARED_RANDOMS[$idx]}"
         timestamp=$(date -u -d "@$seconds" +%H:%M:%S)
         frame_num=$(printf "%02d" $((idx + 1)))
         ffmpeg -loglevel error -ss "$timestamp" -i "$video" -frames:v 1 "$target_dir/frame_${frame_num}.png"
