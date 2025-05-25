@@ -100,22 +100,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
   <script>
-    const encodings = [
-      "frames/Séquence 01 Facebook 1080",
-      "frames/Séquence 01 Facebook 720",
-      "frames/Séquence 01 H264 2020",
-      "frames/Séquence 01 H264 HLG",
-      "frames/Séquence 01 H264 PQ",
-      "frames/Séquence 01 HQ 1080",
-      "frames/Séquence 01 HQ 720",
-      "frames/Séquence 01 - Match source - Adaptative High Bitrate",
-      "frames/Séquence 01 Vimeo 1080",
-      "frames/Séquence 01 Vimeo 720",
-      "frames/Séquence 01 Youtube 1080",
-      "frames/Séquence 01 Youtube 720",
-      "frames/vokoscreenNG-2025-05-24_07-36-22",
-      "frames/vokoscreenNG-2025-05-24_07-36-22-00.00.05.731-00.47.36.857"
-    ];
+    const encodings = {{ENCODINGS}};
 
     const frameCount = 10;
     const root = document.getElementById('carousels-root');
@@ -214,11 +199,11 @@
         slidesContainer.className = 'swiper-wrapper';
 
         for (let i = 1; i <= frameCount; i++) {
-          const frameKey = `${encoding}/frame_${String(i).padStart(2, '0')}`;
+          const frameKey = `${encoding}/frame_${String(i).padStart(2, '0')}.png`;
           const slide = document.createElement('div');
           slide.className = 'swiper-slide';
           const img = document.createElement('img');
-          img.src = `${frameKey}.jpg`;
+          img.src = `${frameKey}`;
           img.alt = frameKey;
           slide.appendChild(img);
 
